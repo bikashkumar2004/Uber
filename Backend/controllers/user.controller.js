@@ -1,6 +1,7 @@
 import userModel from "../models/user.model.js";
 import { createUser } from "../services/user.services.js";
 import { validationResult } from "express-validator";
+import BlacklistedToken from "../models/blacklistToken.Model.js";
 
 export const registerUser = async (req, res, next) => {
   const errors = validationResult(req);
@@ -42,7 +43,19 @@ export const loginUser = async (req, res, next) => {
   }
   const token = user.generateAuthToken();
 
+  res.cookie('token', token );
   res.status(200).json({token, user})
 }
 
+export const getUserProfile = async (req, res, next) => {
+  res.status(200).json(req.user);
+}
 
+export const logoutUser = async (req, res, next) => {
+  res.clearCookie('token');
+  const token = req.cookies.token || req.headers.authorization.split(' ')[1];
+
+  await BlacklistedToken.create({ token });
+
+  res.status(200).json({ message: 'Logged out'});
+}
