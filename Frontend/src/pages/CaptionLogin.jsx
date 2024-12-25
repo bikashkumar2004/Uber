@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { CaptionDataContext } from "../context/CaptionContext";
+import axios from "axios";
 
 
 const CaptionLogin = () => {
@@ -7,13 +9,25 @@ const CaptionLogin = () => {
   const [password, setPassword] = useState('')
   const [captionData, setCaptionData] = useState({})
 
-  const submitHandler = (e) => {
+  const navigate = useNavigate()
+
+  const { caption, setCaption } = React.useContext(CaptionDataContext)
+
+  const submitHandler = async (e) => {
     e.preventDefault();
-    setCaptionData({
+    const captionData = {
       email: email,
       password: password
-    })
-    console.log(captionData)
+    }
+    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/caption/login`, captionData)
+
+    if(response.status === 200){
+      const data = response.data
+      setCaption(data.caption)
+      localStorage.setItem('token', data.token)
+      navigate('/caption-home')
+    }
+
     setEmail('');
     setPassword('');
   }
